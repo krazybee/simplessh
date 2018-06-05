@@ -301,3 +301,42 @@ func addPortToHost(host string) string {
 
 	return host
 }
+
+// Upload a file as bytes to the remote server
+func (c *Client) UploadBytes(local []byte, remote string) error {
+	client, err := sftp.NewClient(c.SSHClient)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	remoteFile, err := client.Create(remote)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(remoteFile, bytes.NewReader(local))
+	return err
+}
+
+// Download a file from the remote server
+func (c *Client) DownloadAsBytes(remote string) ([]byte, error) {
+	client, err := sftp.NewClient(c.SSHClient)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Close()
+
+	remoteFile, err := client.Open(remote)
+	if err != nil {
+		return nil, err
+	}
+	defer remoteFile.Close()
+
+	fileBytes, err := ioutil.ReadFile(remote)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileBytes, err
+}
