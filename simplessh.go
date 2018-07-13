@@ -321,22 +321,15 @@ func (c *Client) UploadBytes(local []byte, remote string) error {
 
 // Download a file from the remote server
 func (c *Client) DownloadAsBytes(remote string) ([]byte, error) {
-	client, err := sftp.NewClient(c.SSHClient)
-	if err != nil {
-		return nil, err
-	}
-	defer client.Close()
+	s, err := c.SFTPClient()
 
-	remoteFile, err := client.Open(remote)
+	file, err := s.Open(remote)
 	if err != nil {
 		return nil, err
 	}
-	defer remoteFile.Close()
+	defer file.Close()
 
-	fileBytes, err := ioutil.ReadFile(remote)
-	if err != nil {
-		return nil, err
-	}
+	fileBytes, err := ioutil.ReadAll(file)
 
 	return fileBytes, err
 }
